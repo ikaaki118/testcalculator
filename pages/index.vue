@@ -3,17 +3,18 @@
     <h1 class="title is-1">testcalc</h1>
 
         <ul>
-          <li v-for="h in histry" :key="k" class="button is-link is-light" @click="click_number(k)">
+          <li v-for="h in histry" :key="k" class="button is-link is-light">
               {{h}}
           </li>
         </ul>
         <br>
+        histrystring:{{histrystring}}<br>
         numberA:{{numberA}}<br>
         numberB:{{numberB}}<br>
         result:{{result}}<br>
         symbol:{{symbol}}<br>
-        calculating:{{calculating}}
-
+        calculating:{{calculating}}<br>
+        test:{{test}}
 
     <div class="field">
       <div class="control">
@@ -58,6 +59,10 @@ export default {
       symbol: null,
       calculating: false,
       histry: [],
+      histrystring: null,
+      test: null,
+
+      histrystring: 1,
 
       //↓定数
       keypad: [1,2,3,4,5,6,7,8,9,0],
@@ -68,6 +73,11 @@ export default {
     methods: {
 
     click_number(n) {
+      //結果表示中で記号の入力が既にされていた場合、表示している結果をnumbeAとする
+      if(this.result != null && this.symbol != null){
+        this.register(this.symbol)
+      }
+
       //"計算中でない" or "数字が未入力" or "数字が0" or "既に計算結果がある" なら数値を代入
       //数字の前に空白を入れることで文字列として認識される
       if(this.calculating == false ||  this.box == null || this.box == 0 || this.result != null){
@@ -84,14 +94,15 @@ export default {
       //"既に数値が登録されている" かつ "記号がクリックされている" かつ "別の記号がクリックされた"ときは記号の登録を変更する
       if(this.numberA != null && this.symbol != s && this.symbol != null && this.box ==null){
         this.symbol = s
+        this.addsymbolhistry(s)
       }
+      //まだ何も入力されていない状態であれば何もしない
       else if(this.numberA == null && this.box ==null){
       }
       else{
         this.register(s)
-        this.calculating = true
-        this.box = this.result
-        this.register(s)
+        this.addsymbolhistry(s)
+
       }
     },
 
@@ -106,19 +117,39 @@ export default {
       //numberAが空でかつboxが空でないとき、boxの中身をAに代入
       if((this.numberA == null) && (this.box != null)){
         this.numberA = parseFloat(this.box)
-        this.histry.push(this.box)
-
+        //result表示中でない場合はboxの中身を履歴に加える
+        this.addhistry()
         this.box= null
         this.result = null
         this.symbol = s
         this.calculating = true
       }
       else if(this.box != null) {
+        this.addhistry()
         this.numberB = parseFloat(this.box)
         this.culculate()
         this.symbol = s
+        this.calculating = true
       }
 
+    },
+
+    addhistry(){
+        if(this.result == null ){
+          this.histry.push(this.box)
+        }
+
+    },
+
+    addsymbolhistry(s){
+      if(this.histry.length){
+        if(this.symbolpad.includes(this.histry[this.histry.length - 1])){
+          this.histry[this.histry.length - 1] = s
+        }
+        else{
+          this.histry.push(s)
+        }
+      }
     },
 
     culculate() {
